@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace MMEMessages.Models
 {
+    /// <summary>
+    /// Represents a reference price message in the MME system.
+    /// </summary>
     public class MmeReferencePrice : IByteMessage
     {
         private long _clientSequenceNumber;
@@ -19,61 +22,84 @@ namespace MMEMessages.Models
         private byte _referencePriceSource;
         private long _referencePrice;
         private long _timestamp;
-
+        /// <summary>
+        /// Gets or sets the client sequence number.
+        /// </summary>
         public long ClientSequenceNumber
         {
             get => _clientSequenceNumber;
             set => _clientSequenceNumber = value;
         }
-
+        /// <summary>
+        /// Gets or sets the message group identifier.
+        /// </summary>
         public short MessageGroup
         {
             get => _messageGroup;
             set => _messageGroup = value;
         }
-
+        /// <summary>
+        /// Gets or sets the message identifier.
+        /// </summary>
         public short MessageId
         {
             get => _messageId;
             set => _messageId = value;
         }
-
+        /// <summary>
+        /// Gets or sets the partition identifier.
+        /// </summary>
         public byte PartitionId
         {
             get => _partitionId;
             set => _partitionId = value;
         }
-
+        /// <summary>
+        /// Gets or sets the actor identifier.
+        /// </summary>
         public int ActorId
         {
             get => _actorId;
             set => _actorId = value;
         }
 
+        /// <summary>
+        /// Gets or sets the order book identifier.
+        /// </summary>
         public int OrderBookId
         {
             get => _orderBookId;
             set => _orderBookId = value;
         }
-
+        /// <summary>
+        /// Gets or sets the reference price source.
+        /// </summary>
         public byte ReferencePriceSource
         {
             get => _referencePriceSource;
             set => _referencePriceSource = value;
         }
-
+        /// <summary>
+        /// Gets or sets the reference price.
+        /// </summary>
         public long ReferencePrice
         {
             get => _referencePrice;
             set => _referencePrice = value;
         }
-
+        /// <summary>
+        /// Gets or sets the timestamp of the reference price.
+        /// </summary>
         public long Timestamp
         {
             get => _timestamp;
             set => _timestamp = value;
         }
-
+        /// <summary>
+        /// Writes the reference price message to the specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <returns>The number of bytes written.</returns>
         public int Write(ByteBuffer buffer)
         {
             int position = buffer.Position;
@@ -90,7 +116,11 @@ namespace MMEMessages.Models
 
             return buffer.Position - position;
         }
-
+        /// <summary>
+        /// Reads the reference price message from the specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer to read from.</param>
+        /// <returns>The number of bytes read.</returns>
         public int Read(ByteBuffer buffer)
         {
             int position = buffer.Position;
