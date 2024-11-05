@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoupBinSdk", "MMEGateWayCSharp\SoupBinSdk.csproj", "{397E43BD-7ACB-459A-B715-1FB2CCE4D909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMEMessages", "MMEMessages\MMEMessages.csproj", "{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{397E43BD-7ACB-459A-B715-1FB2CCE4D909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{397E43BD-7ACB-459A-B715-1FB2CCE4D909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{397E43BD-7ACB-459A-B715-1FB2CCE4D909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{397E43BD-7ACB-459A-B715-1FB2CCE4D909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {41C509D8-EDAC-448A-B424-8E91A949CCFE}
+	EndGlobalSection
+EndGlobal
