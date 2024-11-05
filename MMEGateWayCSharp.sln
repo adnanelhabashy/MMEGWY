@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoupBinSdk", "MMEGateWayCSh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMEMessages", "MMEMessages\MMEMessages.csproj", "{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMESampleServer", "MMESampleServer\MMESampleServer.csproj", "{D4252AE9-3BCC-42B6-844B-161508814E1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9002AFF-55CF-40FD-98C2-76EEB11A10BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4252AE9-3BCC-42B6-844B-161508814E1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4252AE9-3BCC-42B6-844B-161508814E1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4252AE9-3BCC-42B6-844B-161508814E1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4252AE9-3BCC-42B6-844B-161508814E1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
