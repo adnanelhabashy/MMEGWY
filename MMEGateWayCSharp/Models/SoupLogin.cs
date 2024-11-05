@@ -9,17 +9,40 @@ using System.Threading.Tasks;
 
 namespace MMEGateWayCSharp.Models
 {
+    /// <summary>
+    /// Represents a SOUP protocol login message.
+    /// </summary>
     public class SoupLogin : IByteMessage
     {
+        /// <summary>
+        /// Gets or sets the username.
+        /// </summary>
         public string UserName { get; set; }
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
         public string Password { get; set; }
+        /// <summary>
+        /// Gets or sets the session identifier.
+        /// </summary>
         public string Session { get; set; }
+        /// <summary>
+        /// Gets or sets the sequence number.
+        /// </summary>
         public long SequenceNumber { get; set; }
-
+        /// <summary>
+        /// Initializes a new instance of the SoupLogin class.
+        /// </summary>
         public SoupLogin()
         {
         }
-
+        /// <summary>
+        /// Initializes a new instance of the SoupLogin class with the specified parameters.
+        /// </summary>
+        /// <param name="userName">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="session">The session identifier.</param>
+        /// <param name="sequenceNumber">The sequence number.</param>
         public SoupLogin(string userName, string password, string session, long sequenceNumber)
         {
             UserName = userName;
@@ -27,7 +50,11 @@ namespace MMEGateWayCSharp.Models
             Session = session;
             SequenceNumber = sequenceNumber;
         }
-
+        /// <summary>
+        /// Writes the login message to the specified ByteBuffer.
+        /// </summary>
+        /// <param name="buffer">The buffer to write to.</param>
+        /// <returns>The number of bytes written.</returns>
         public int Write(ByteBuffer buffer)
         {
             int position = buffer.Position;
@@ -37,7 +64,11 @@ namespace MMEGateWayCSharp.Models
             buffer.Put(Encoding.ASCII.GetBytes(Strings.GetPaddedString(SequenceNumber, SoupConstants.SEQUENCE_NUMBER_LENGTH)));
             return buffer.Position - position;
         }
-
+        /// <summary>
+        /// Reads the login message from the specified ByteBuffer.
+        /// </summary>
+        /// <param name="buffer">The buffer to read from.</param>
+        /// <returns>The number of bytes read.</returns>
         public int Read(ByteBuffer buffer)
         {
             int position = buffer.Position;

@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace MMEGateWayCSharp.Core
 {
+    /// <summary>
+    /// Represents a Soup TCP connection that implements the <see cref="IConnection"/> interface.
+    /// </summary>
     public class SoupConnection : IConnection
     {
         private static int CONNECTION_ID_COUNTER = 1;
@@ -37,7 +40,13 @@ namespace MMEGateWayCSharp.Core
         private readonly ByteBuffer _dataReceiveBuffer = ByteBuffer.Allocate(1536 * 4 - 22);
         private readonly ByteBuffer _headerSendBuffer = ByteBuffer.Allocate(3);
         private readonly ByteBuffer _dataSendBuffer = ByteBuffer.Allocate(1536 - 22);
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SoupConnection"/> class.
+        /// </summary>
+        /// <param name="host">The hostname or IP address of the server.</param>
+        /// <param name="port">The port number to connect to.</param>
+        /// <param name="listener">An optional connection listener.</param>
         public SoupConnection(string host, int port, IConnectionListener listener)
         {
             lock (ConnectionIdLock)
@@ -49,57 +58,104 @@ namespace MMEGateWayCSharp.Core
             _port = port;
             _listener = listener;
         }
-
+        /// <summary>
+        /// Gets the unique identifier of the connection.
+        /// </summary>
         public int Id => _connectionId;
-
+        /// <summary>
+        /// Gets a value indicating whether the connection is established.
+        /// </summary>
         public bool IsConnected => _tcpClient != null && _tcpClient.Connected;
-
+        /// <summary>
+        /// Gets a value indicating whether the connection is logged in.
+        /// </summary>
         public bool IsLoggedIn => _loggedIn;
-
+        /// <summary>
+        /// Gets a value indicating whether the connection is closed.
+        /// </summary>
         public bool IsClosed => _closed;
-
+        /// <summary>
+        /// Gets the session identifier associated with the connection.
+        /// </summary>
         public string Session => _session;
-
+        /// <summary>
+        /// Gets the current sequence number for the connection.
+        /// </summary>
         public long SequenceNumber => _sequenceNumber;
-
+        /// <summary>
+        /// Sets the byte order for the payload.
+        /// </summary>
+        /// <param name="payloadByteOrder">The byte order to set.</param>
         public void SetByteOrder(ByteOrder payloadByteOrder)
         {
             _payloadByteOrder = payloadByteOrder;
             _dataSendBuffer.Order = payloadByteOrder;
             _dataReceiveBuffer.Order = payloadByteOrder;
         }
-
+        /// <summary>
+        /// Enables or disables tracing of connection operations.
+        /// </summary>
+        /// <param name="trace">If set to <c>true</c>, tracing is enabled.</param>
         public void SetTrace(bool trace)
         {
             _trace = trace;
         }
+        /// <summary>
+        /// Logs in to the connection with the specified username and password.
+        /// </summary>
+        /// <param name="userName">The username.</param>
+        /// <param name="password">The password.</param>
 
         public void Login(string userName, string password)
         {
             Login(userName, password, "", 1);
         }
-
+        /// <summary>
+        /// Logs in to the connection with the specified username, password, and sequence number.
+        /// </summary>
+        /// <param name="userName">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="sequenceNumber">The starting sequence number.</param>
         public void Login(string userName, string password, long sequenceNumber)
         {
             Login(userName, password, "", sequenceNumber);
         }
-
+        /// <summary>
+        /// Logs in to the connection with the specified username, password, session, and sequence number.
+        /// </summary>
+        /// <param name="userName">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="session">The session identifier.</param>
+        /// <param name="sequenceNumber">The starting sequence number.</param>
         public void Login(string userName, string password, string session, long sequenceNumber)
         {
             _credentials = new Credentials(userName, password);
             Login(_credentials, session, sequenceNumber);
         }
+        /// <summary>
+        /// Logs in to the connection with the specified credentials.
+        /// </summary>
+        /// <param name="credentials">The credentials.</param>
 
         public void Login(Credentials credentials)
         {
             Login(credentials, "", 1);
         }
-
+        /// <summary>
+        /// Logs in to the connection with the specified credentials and sequence number.
+        /// </summary>
+        /// <param name="credentials">The credentials.</param>
+        /// <param name="sequenceNumber">The starting sequence number.</param>
         public void Login(Credentials credentials, long sequenceNumber)
         {
             Login(credentials, "", sequenceNumber);
         }
-
+        /// <summary>
+        /// Logs in to the connection with the specified credentials, session, and sequence number.
+        /// </summary>
+        /// <param name="credentials">The credentials.</param>
+        /// <param name="session">The session identifier.</param>
+        /// <param name="sequenceNumber">The starting sequence number.</param>
         public void Login(Credentials credentials, string session, long sequenceNumber)
         {
             if (_trace)
@@ -126,7 +182,9 @@ namespace MMEGateWayCSharp.Core
             var soupLogin = new SoupLogin(credentials.UserName, credentials.Password, session, sequenceNumber);
             SendData(SoupConstants.TYPE_LOGIN, soupLogin);
         }
-
+        /// <summary>
+        /// Logs out from the connection and closes it.
+        /// </summary>
         public void Logout()
         {
             if (_trace)
@@ -147,7 +205,9 @@ namespace MMEGateWayCSharp.Core
                 Close();
             }
         }
-
+        /// <summary>
+        /// Closes the connection.
+        /// </summary>
         public void Close()
         {
             if (_trace)
@@ -168,22 +228,34 @@ namespace MMEGateWayCSharp.Core
                 }
             }
         }
-
+        /// <summary>
+        /// Sends a message over the connection.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
         public void SendMessage(IByteMessage message)
         {
             SendData(SoupConstants.TYPE_UNSEQ, message);
         }
+        /// <summary>
+        /// Sets user-defined data associated with the connection.
+        /// </summary>
+        /// <param name="userData">The user data to associate.</param>
 
         public void SetUserData(object userData)
         {
             _userData = userData;
         }
-
+        /// <summary>
+        /// Gets the user-defined data associated with the connection.
+        /// </summary>
+        /// <returns>The user data associated with the connection.</returns>
         public object GetUserData()
         {
             return _userData;
         }
-
+        /// <summary>
+        /// Sends a heartbeat message to the server.
+        /// </summary>
         public void SendHeartbeat()
         {
             try
@@ -206,7 +278,9 @@ namespace MMEGateWayCSharp.Core
                 Close();
             }
         }
-
+        /// <summary>
+        /// Receives data from the server.
+        /// </summary>
         public void ReceiveData()
         {
             try
@@ -328,7 +402,9 @@ namespace MMEGateWayCSharp.Core
                 Close();
             }
         }
-
+        /// <summary>
+        /// Establishes the TCP connection to the server.
+        /// </summary>
         private void Connect()
         {
             if (_trace)
@@ -340,7 +416,11 @@ namespace MMEGateWayCSharp.Core
             _tcpClient.Connect(_host, _port);
             _networkStream = _tcpClient.GetStream();
         }
-
+        /// <summary>
+        /// Sends data to the server.
+        /// </summary>
+        /// <param name="type">The message type.</param>
+        /// <param name="payload">The message payload.</param>
         private void SendData(byte type, IByteMessage payload)
         {
             if (_trace)
@@ -378,7 +458,11 @@ namespace MMEGateWayCSharp.Core
                 }
             }
         }
-
+        /// <summary>
+        /// Validates the provided credentials.
+        /// </summary>
+        /// <param name="credentials">The credentials to validate.</param>
+        /// <exception cref="SoupException">Thrown when the credentials are invalid.</exception>
         private void ValidateCredentials(Credentials credentials)
         {
             if (credentials == null)
@@ -402,7 +486,10 @@ namespace MMEGateWayCSharp.Core
                 throw new SoupException($"The password length must not be longer than {SoupConstants.PASSWORD_LENGTH}");
             }
         }
-
+        /// <summary>
+        /// Returns a string representation of the connection.
+        /// </summary>
+        /// <returns>A string representing the connection state.</returns>
         public override string ToString()
         {
             var sb = new StringBuilder();
