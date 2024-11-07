@@ -21,7 +21,7 @@ class Program
             .AddScoped<IByteMessage, SoupLogin>()// Assuming SoupClient implements ISoupClient
             .AddScoped<IByteMessage, SoupReject>()
             .AddScoped<IConnection, SoupConnection>()
-            .AddScoped<IConnectionListener, ConnectionListener>()
+            .AddScoped<IConnectionListener>(provider =>new ConnectionListener("DRPORD", "4lso6iY?bl"))
             .AddTransient<App>() // Register the main app class
             .BuildServiceProvider();
 
