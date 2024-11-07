@@ -10,9 +10,18 @@ namespace MMEMessages.Listeners
 {
     public class ConnectionListener : IConnectionListener
     {
+        private readonly string _userName;
+        private readonly string _password;
+
+        public ConnectionListener(string userName, string password)
+        {
+            _userName = userName;
+            _password = password;
+        }
         public void OnConnectionEstablished(IConnection connection)
         {
             Console.WriteLine($"Connection established. Session: {connection.Session}, SequenceNumber: {connection.SequenceNumber}");
+            connection.Login(_userName, _password);
         }
 
         public void OnConnectionClosed(IConnection connection)

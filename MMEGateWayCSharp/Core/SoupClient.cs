@@ -21,7 +21,7 @@ namespace MMEGateWayCSharp.Core
         /// <summary>
         /// Initializes a new instance of the <see cref="SoupClient"/> class.
         /// </summary>
-        private SoupClient()
+        public SoupClient()
         {
         }
         /// <summary>
