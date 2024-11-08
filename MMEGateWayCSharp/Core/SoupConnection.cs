@@ -322,7 +322,7 @@ namespace MMEGateWayCSharp.Core
                             throw new IOException("Reached EOF");
                         }
                         _headerReceiveBuffer.Put(headerBytes, 0, bytesRead);
-                        Console.WriteLine("Received Header Bytes: {HeaderBytes}", BitConverter.ToString(headerBytes));
+                        Console.WriteLine("Received Header Bytes: {0}", BitConverter.ToString(headerBytes));
 
                         if (_headerReceiveBuffer.HasRemaining)
                         {
@@ -334,7 +334,7 @@ namespace MMEGateWayCSharp.Core
                     // Parse Header
                     var soupHeader = new SoupHeader();
                     soupHeader.Read(_headerReceiveBuffer);
-                    Console.WriteLine("Parsed SoupHeader: Length={Length}, Type={Type}", soupHeader.Length, (char)soupHeader.Type);
+                    Console.WriteLine("Parsed SoupHeader: Length={0}, Type={1}", soupHeader.Length, (char)soupHeader.Type);
 
                     int payloadLength = soupHeader.PayloadLength;
 
@@ -342,7 +342,7 @@ namespace MMEGateWayCSharp.Core
                     if (_dataReceiveBuffer.Remaining < payloadLength)
                     {
                         _dataReceiveBuffer = ByteBuffer.Allocate(payloadLength);
-                        Console.WriteLine("Allocated new data receive buffer with size {Size}", payloadLength);
+                        Console.WriteLine("Allocated new data receive buffer with size {0}", payloadLength);
                     }
 
                     // Read Payload
@@ -355,7 +355,7 @@ namespace MMEGateWayCSharp.Core
                             throw new IOException("Reached EOF");
                         }
                         _dataReceiveBuffer.Put(dataBytes, 0, bytesRead);
-                        Console.WriteLine("Received Data Bytes: {DataBytes}", BitConverter.ToString(dataBytes));
+                        Console.WriteLine("Received Data Bytes: {0}", BitConverter.ToString(dataBytes));
 
                         if (_dataReceiveBuffer.HasRemaining)
                         {
@@ -373,14 +373,14 @@ namespace MMEGateWayCSharp.Core
                             _session = soupAccept.Session.Trim();
                             _sequenceNumber = soupAccept.SequenceNumber;
                             _loggedIn = true;
-                            Console.WriteLine("Login accepted. Session: {Session}, SequenceNumber: {SequenceNumber}", _session, _sequenceNumber);
+                            Console.WriteLine("Login accepted. Session: {0}, SequenceNumber: {1}", _session, _sequenceNumber);
                             _listener?.OnConnectionEstablished(this);
                             break;
 
                         case SoupConstants.TYPE_REJECT:
                             var soupReject = new SoupReject();
                             soupReject.Read(_dataReceiveBuffer);
-                            Console.WriteLine("Login rejected. Reason: {Reason}", soupReject.Reason);
+                            Console.WriteLine("Login rejected. Reason: {0}", soupReject.Reason);
                             _listener?.OnConnectionRejected(this, soupReject.Reason);
                             Close();
                             break;
@@ -397,7 +397,7 @@ namespace MMEGateWayCSharp.Core
                             break;
 
                         default:
-                            Console.WriteLine("Received unknown message type: {Type}", (char)soupHeader.Type);
+                            Console.WriteLine("Received unknown message type: {0}", (char)soupHeader.Type);
                             break;
                     }
 
@@ -408,7 +408,7 @@ namespace MMEGateWayCSharp.Core
             }
             catch (Exception e)
             {
-                Console.WriteLine(e+ " ReceiveData exception: {Message} "+ e.Message);
+                Console.WriteLine(e+ " ReceiveData exception: {0} "+ e.Message);
                 _listener?.OnConnectionError(this, e.Message);
                 Close();
             }
@@ -477,8 +477,8 @@ namespace MMEGateWayCSharp.Core
                 var headerBytes = _headerSendBuffer.ToArray();
                 var dataBytes = _dataSendBuffer.ToArray();
 
-                Console.WriteLine("Sending Header: {HeaderBytes}", BitConverter.ToString(headerBytes));
-                Console.WriteLine("Sending Data: {DataBytes}", BitConverter.ToString(dataBytes));
+                Console.WriteLine("Sending Header: {0}", BitConverter.ToString(headerBytes));
+                Console.WriteLine("Sending Data: {0}", BitConverter.ToString(dataBytes));
 
                 var buffers = new List<ArraySegment<byte>>
                 {
