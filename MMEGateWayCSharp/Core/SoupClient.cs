@@ -103,13 +103,32 @@ namespace MMEGateWayCSharp.Core
         /// </summary>
         private void SelectorThread()
         {
+            long lastTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
             while (!_stopThread)
             {
                 try
                 {
-                    foreach (var connection in _connections)
+                    foreach (var connection in _connections.ToList())
                     {
                         connection.ReceiveData();
+                        if (connection.IsClosed)
+                        {
+                            _connections.Remove(connection);
+                        }
+                    }
+
+                    long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    if (now - lastTime >= 1000)
+                    {
+                        lastTime = now;
+                        foreach (var connection in _connections.ToList())
+                        {
+                            if (connection.IsLoggedIn)
+                            {
+                                connection.SendHeartbeat();
+                            }
+                        }
                     }
 
                     Thread.Sleep(SELECT_TIMEOUT_MS);
@@ -120,6 +139,8 @@ namespace MMEGateWayCSharp.Core
                 }
             }
         }
+
+
         /// <summary>
         /// Contains registration information for a connection.
         /// </summary>

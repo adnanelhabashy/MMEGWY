@@ -272,12 +272,14 @@ namespace MMEGateWayCSharp.Core
                     _listener?.OnHeartbeat(this);
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                _listener?.OnConnectionError(this, "Could not send heartbeat, connection will be closed");
+                _listener?.OnConnectionError(this, $"Could not send heartbeat: {e.Message}");
                 Close();
             }
         }
+
+
         /// <summary>
         /// Receives data from the server.
         /// </summary>

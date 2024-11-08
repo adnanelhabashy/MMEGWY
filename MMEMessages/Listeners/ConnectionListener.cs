@@ -12,16 +12,27 @@ namespace MMEMessages.Listeners
     {
         private readonly string _userName;
         private readonly string _password;
+        private readonly TaskCompletionSource<bool> _loginCompletionSource;
 
-        public ConnectionListener(string userName, string password)
+        public ConnectionListener(string userName, string password, TaskCompletionSource<bool> loginCompletionSource)
         {
             _userName = userName;
             _password = password;
+            _loginCompletionSource = loginCompletionSource;
         }
+
         public void OnConnectionEstablished(IConnection connection)
         {
             Console.WriteLine($"Connection established. Session: {connection.Session}, SequenceNumber: {connection.SequenceNumber}");
-            connection.Login(_userName, _password);
+            try
+            {
+                connection.Login(_userName, _password);
+                _loginCompletionSource.TrySetResult(true);
+            }
+            catch (Exception ex)
+            {
+                _loginCompletionSource.TrySetException(ex);
+            }
         }
 
         public void OnConnectionClosed(IConnection connection)
@@ -36,7 +47,9 @@ namespace MMEMessages.Listeners
 
         public void OnConnectionError(IConnection connection, string errorMessage)
         {
-            Console.WriteLine($"Connection error: {errorMessage}");
+            Console.WriteLine("Connection error occurred:");
+            Console.WriteLine($"- {errorMessage}");
+            Console.WriteLine("Please check your network connection, server address, and credentials, then try again.");
         }
 
         public void OnDataReceived(IConnection connection, ByteBuffer data, long sequenceNumber)
