@@ -48,14 +48,17 @@ public class App
 
         try
         {
-            // Create the TaskCompletionSource for login
+            // Create TaskCompletionSources for connection and login
+            var connectionEstablishedTcs = new TaskCompletionSource<bool>();
             var loginCompletionSource = new TaskCompletionSource<bool>();
 
             // Create a SoupClient
             var soupClient = SoupClient.Create();
 
-            // Create a ConnectionListener with credentials and the loginCompletionSource
-            var listener = new ConnectionListener(userName, password, loginCompletionSource);
+            // Create a ConnectionListener with credentials and the TaskCompletionSources
+            var listener = new ConnectionListener(userName, password,
+                                                  connectionEstablishedTcs,
+                                                  loginCompletionSource);
 
             // Create a connection
             var connection = soupClient.CreateConnection(serverAddress, serverPort, listener);
@@ -63,13 +66,30 @@ public class App
             // Optionally set tracing
             connection.SetTrace(true);
 
-            // **Initiate Login Immediately After Connection**
+            // **Wait for the connection to be established**
+            var connectionTask = connectionEstablishedTcs.Task;
+            var timeout = Task.Delay(5000); // 5 seconds timeout
+
+            var completedTask = await Task.WhenAny(connectionTask, timeout);
+            if (completedTask == timeout)
+            {
+                throw new TimeoutException("Connection establishment timed out.");
+            }
+
+            // **Initiate Login after connection is established**
             connection.Login(userName, password);
 
             // **Await the login process**
-            await loginCompletionSource.Task;
+            var loginTask = loginCompletionSource.Task;
+            var loginTimeout = Task.Delay(5000); // 5 seconds timeout
 
-            if (connection.IsLoggedIn)
+            var loginCompletedTask = await Task.WhenAny(loginTask, loginTimeout);
+            if (loginCompletedTask == loginTimeout)
+            {
+                throw new TimeoutException("Login timed out.");
+            }
+
+            if (loginTask.Result && connection.IsLoggedIn)
             {
                 Console.WriteLine("Successfully logged in.");
 
