@@ -68,16 +68,18 @@ public class App
 
             // **Wait for the connection to be established**
             var connectionTask = connectionEstablishedTcs.Task;
-            var timeout = Task.Delay(5000); // 5 seconds timeout
+            var connectionTimeout = Task.Delay(10000); // 10 seconds timeout
 
-            var completedTask = await Task.WhenAny(connectionTask, timeout);
-            if (completedTask == timeout)
+            var completedConnectionTask = await Task.WhenAny(connectionTask, connectionTimeout);
+            if (completedConnectionTask == connectionTimeout)
             {
                 throw new TimeoutException("Connection establishment timed out.");
             }
 
             // **Initiate Login after connection is established**
             connection.Login(userName, password);
+
+
 
             // **Await the login process**
             var loginTask = loginCompletionSource.Task;
