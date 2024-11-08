@@ -431,12 +431,12 @@ namespace MMEGateWayCSharp.Core
                 _networkStream = _tcpClient.GetStream();
                 if (_trace)
                 {
-                    Console.WriteLine("Successfully connected to {Host}:{Port}", _host, _port);
+                    Console.WriteLine("Successfully connected to {0}:{1}", _host, _port);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex+" Connect failed: {Message} "+ ex.Message);
+                Console.WriteLine(ex+" Connect failed: {0} "+ ex.Message);
                 throw; // Re-throw to be handled in ReceiveData
             }
         }
