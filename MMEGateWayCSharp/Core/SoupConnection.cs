@@ -37,7 +37,7 @@ namespace MMEGateWayCSharp.Core
 
         // Buffers
         private readonly ByteBuffer _headerReceiveBuffer = ByteBuffer.Allocate(3);
-        private readonly ByteBuffer _dataReceiveBuffer = ByteBuffer.Allocate(1536 * 4 - 22);
+        private  ByteBuffer _dataReceiveBuffer = ByteBuffer.Allocate(1536 * 4 - 22);
         private readonly ByteBuffer _headerSendBuffer = ByteBuffer.Allocate(3);
         private readonly ByteBuffer _dataSendBuffer = ByteBuffer.Allocate(1536 - 22);
 
@@ -58,30 +58,37 @@ namespace MMEGateWayCSharp.Core
             _port = port;
             _listener = listener;
         }
+
         /// <summary>
         /// Gets the unique identifier of the connection.
         /// </summary>
         public int Id => _connectionId;
+
         /// <summary>
         /// Gets a value indicating whether the connection is established.
         /// </summary>
         public bool IsConnected => _tcpClient != null && _tcpClient.Connected;
+
         /// <summary>
         /// Gets a value indicating whether the connection is logged in.
         /// </summary>
         public bool IsLoggedIn => _loggedIn;
+
         /// <summary>
         /// Gets a value indicating whether the connection is closed.
         /// </summary>
         public bool IsClosed => _closed;
+
         /// <summary>
         /// Gets the session identifier associated with the connection.
         /// </summary>
         public string Session => _session;
+
         /// <summary>
         /// Gets the current sequence number for the connection.
         /// </summary>
         public long SequenceNumber => _sequenceNumber;
+
         /// <summary>
         /// Sets the byte order for the payload.
         /// </summary>
@@ -92,6 +99,7 @@ namespace MMEGateWayCSharp.Core
             _dataSendBuffer.Order = payloadByteOrder;
             _dataReceiveBuffer.Order = payloadByteOrder;
         }
+
         /// <summary>
         /// Enables or disables tracing of connection operations.
         /// </summary>
@@ -100,16 +108,17 @@ namespace MMEGateWayCSharp.Core
         {
             _trace = trace;
         }
+
         /// <summary>
         /// Logs in to the connection with the specified username and password.
         /// </summary>
         /// <param name="userName">The username.</param>
         /// <param name="password">The password.</param>
-
         public void Login(string userName, string password)
         {
             Login(userName, password, "", 1);
         }
+
         /// <summary>
         /// Logs in to the connection with the specified username, password, and sequence number.
         /// </summary>
@@ -120,6 +129,7 @@ namespace MMEGateWayCSharp.Core
         {
             Login(userName, password, "", sequenceNumber);
         }
+
         /// <summary>
         /// Logs in to the connection with the specified username, password, session, and sequence number.
         /// </summary>
@@ -132,15 +142,16 @@ namespace MMEGateWayCSharp.Core
             _credentials = new Credentials(userName, password);
             Login(_credentials, session, sequenceNumber);
         }
+
         /// <summary>
         /// Logs in to the connection with the specified credentials.
         /// </summary>
         /// <param name="credentials">The credentials.</param>
-
         public void Login(Credentials credentials)
         {
             Login(credentials, "", 1);
         }
+
         /// <summary>
         /// Logs in to the connection with the specified credentials and sequence number.
         /// </summary>
@@ -150,6 +161,7 @@ namespace MMEGateWayCSharp.Core
         {
             Login(credentials, "", sequenceNumber);
         }
+
         /// <summary>
         /// Logs in to the connection with the specified credentials, session, and sequence number.
         /// </summary>
@@ -182,6 +194,7 @@ namespace MMEGateWayCSharp.Core
             var soupLogin = new SoupLogin(credentials.UserName, credentials.Password, session, sequenceNumber);
             SendData(SoupConstants.TYPE_LOGIN, soupLogin);
         }
+
         /// <summary>
         /// Logs out from the connection and closes it.
         /// </summary>
@@ -205,6 +218,7 @@ namespace MMEGateWayCSharp.Core
                 Close();
             }
         }
+
         /// <summary>
         /// Closes the connection.
         /// </summary>
@@ -228,6 +242,7 @@ namespace MMEGateWayCSharp.Core
                 }
             }
         }
+
         /// <summary>
         /// Sends a message over the connection.
         /// </summary>
@@ -236,15 +251,16 @@ namespace MMEGateWayCSharp.Core
         {
             SendData(SoupConstants.TYPE_UNSEQ, message);
         }
+
         /// <summary>
         /// Sets user-defined data associated with the connection.
         /// </summary>
         /// <param name="userData">The user data to associate.</param>
-
         public void SetUserData(object userData)
         {
             _userData = userData;
         }
+
         /// <summary>
         /// Gets the user-defined data associated with the connection.
         /// </summary>
@@ -253,6 +269,7 @@ namespace MMEGateWayCSharp.Core
         {
             return _userData;
         }
+
         /// <summary>
         /// Sends a heartbeat message to the server.
         /// </summary>
@@ -266,7 +283,7 @@ namespace MMEGateWayCSharp.Core
 
                     if (_trace)
                     {
-                        Console.WriteLine($"SoupConnection #{_connectionId} sent heartbeat");
+                        Console.WriteLine("SoupConnection sent heartbeat");
                     }
 
                     _listener?.OnHeartbeat(this);
@@ -278,7 +295,6 @@ namespace MMEGateWayCSharp.Core
                 Close();
             }
         }
-
 
         /// <summary>
         /// Receives data from the server.
@@ -296,18 +312,103 @@ namespace MMEGateWayCSharp.Core
 
                 if (_networkStream.DataAvailable)
                 {
-                    // Existing data processing logic...
+                    // Read Header if not fully read
+                    if (_headerReceiveBuffer.HasRemaining)
+                    {
+                        byte[] headerBytes = new byte[_headerReceiveBuffer.Remaining];
+                        int bytesRead = _networkStream.Read(headerBytes, 0, headerBytes.Length);
+                        if (bytesRead == 0)
+                        {
+                            throw new IOException("Reached EOF");
+                        }
+                        _headerReceiveBuffer.Put(headerBytes, 0, bytesRead);
+                        Console.WriteLine("Received Header Bytes: {HeaderBytes}", BitConverter.ToString(headerBytes));
 
-                    // After reading data
-                    byte[] receivedBytes = _dataReceiveBuffer.ToArray();
-                    Console.WriteLine($"Received Data: {BitConverter.ToString(receivedBytes)}");
+                        if (_headerReceiveBuffer.HasRemaining)
+                        {
+                            return; // Wait for more data
+                        }
+                        _headerReceiveBuffer.Flip();
+                    }
 
-                    // Handle messages based on type...
+                    // Parse Header
+                    var soupHeader = new SoupHeader();
+                    soupHeader.Read(_headerReceiveBuffer);
+                    Console.WriteLine("Parsed SoupHeader: Length={Length}, Type={Type}", soupHeader.Length, (char)soupHeader.Type);
+
+                    int payloadLength = soupHeader.PayloadLength;
+
+                    // Adjust Data Buffer if needed
+                    if (_dataReceiveBuffer.Remaining < payloadLength)
+                    {
+                        _dataReceiveBuffer = ByteBuffer.Allocate(payloadLength);
+                        Console.WriteLine("Allocated new data receive buffer with size {Size}", payloadLength);
+                    }
+
+                    // Read Payload
+                    if (_dataReceiveBuffer.HasRemaining)
+                    {
+                        byte[] dataBytes = new byte[_dataReceiveBuffer.Remaining];
+                        int bytesRead = _networkStream.Read(dataBytes, 0, dataBytes.Length);
+                        if (bytesRead == 0)
+                        {
+                            throw new IOException("Reached EOF");
+                        }
+                        _dataReceiveBuffer.Put(dataBytes, 0, bytesRead);
+                        Console.WriteLine("Received Data Bytes: {DataBytes}", BitConverter.ToString(dataBytes));
+
+                        if (_dataReceiveBuffer.HasRemaining)
+                        {
+                            return; // Wait for more data
+                        }
+                        _dataReceiveBuffer.Flip();
+                    }
+
+                    // Handle Message Based on Type
+                    switch (soupHeader.Type)
+                    {
+                        case SoupConstants.TYPE_ACCEPT:
+                            var soupAccept = new SoupAccept();
+                            soupAccept.Read(_dataReceiveBuffer);
+                            _session = soupAccept.Session.Trim();
+                            _sequenceNumber = soupAccept.SequenceNumber;
+                            _loggedIn = true;
+                            Console.WriteLine("Login accepted. Session: {Session}, SequenceNumber: {SequenceNumber}", _session, _sequenceNumber);
+                            _listener?.OnConnectionEstablished(this);
+                            break;
+
+                        case SoupConstants.TYPE_REJECT:
+                            var soupReject = new SoupReject();
+                            soupReject.Read(_dataReceiveBuffer);
+                            Console.WriteLine("Login rejected. Reason: {Reason}", soupReject.Reason);
+                            _listener?.OnConnectionRejected(this, soupReject.Reason);
+                            Close();
+                            break;
+
+                        case SoupConstants.TYPE_SRV_HEARTBEAT:
+                            Console.WriteLine("Received Server Heartbeat");
+                            _listener?.OnHeartbeat(this);
+                            break;
+
+                        case SoupConstants.TYPE_EOS:
+                            Console.WriteLine("Connection Closed by Server");
+                            _listener?.OnConnectionClosed(this);
+                            Close();
+                            break;
+
+                        default:
+                            Console.WriteLine("Received unknown message type: {Type}", (char)soupHeader.Type);
+                            break;
+                    }
+
+                    // Clear Buffers for Next Message
+                    _headerReceiveBuffer.Clear();
+                    _dataReceiveBuffer.Clear();
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ReceiveData exception: {e.Message}");
+                Console.WriteLine(e+ " ReceiveData exception: {Message} "+ e.Message);
                 _listener?.OnConnectionError(this, e.Message);
                 Close();
             }
@@ -330,12 +431,12 @@ namespace MMEGateWayCSharp.Core
                 _networkStream = _tcpClient.GetStream();
                 if (_trace)
                 {
-                    Console.WriteLine($"Successfully connected to {_host}:{_port}");
+                    Console.WriteLine("Successfully connected to {Host}:{Port}", _host, _port);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Connect failed: {ex.Message}");
+                Console.WriteLine(ex+" Connect failed: {Message} "+ ex.Message);
                 throw; // Re-throw to be handled in ReceiveData
             }
         }
@@ -367,25 +468,33 @@ namespace MMEGateWayCSharp.Core
                 var soupHeader = new SoupHeader();
                 soupHeader.Length = dataLength + 1;
                 soupHeader.Type = type;
+
+                // Ensure the header buffer is set to BigEndian
+                _headerSendBuffer.Order = ByteOrder.BigEndian;
                 soupHeader.Write(_headerSendBuffer);
                 _headerSendBuffer.Flip();
 
                 var headerBytes = _headerSendBuffer.ToArray();
                 var dataBytes = _dataSendBuffer.ToArray();
 
-                Console.WriteLine($"Sending Header: {BitConverter.ToString(headerBytes)}");
-                Console.WriteLine($"Sending Data: {BitConverter.ToString(dataBytes)}");
+                Console.WriteLine("Sending Header: {HeaderBytes}", BitConverter.ToString(headerBytes));
+                Console.WriteLine("Sending Data: {DataBytes}", BitConverter.ToString(dataBytes));
 
                 var buffers = new List<ArraySegment<byte>>
-        {
-            new ArraySegment<byte>(headerBytes),
-            new ArraySegment<byte>(dataBytes)
-        };
+                {
+                    new ArraySegment<byte>(headerBytes),
+                    new ArraySegment<byte>(dataBytes)
+                };
 
                 foreach (var buffer in buffers)
                 {
                     _networkStream.Write(buffer.Array, buffer.Offset, buffer.Count);
                 }
+                Console.WriteLine("Data sent successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Attempted to send data while not connected.");
             }
         }
 
@@ -417,6 +526,7 @@ namespace MMEGateWayCSharp.Core
                 throw new SoupException($"The password length must not be longer than {SoupConstants.PASSWORD_LENGTH}");
             }
         }
+
         /// <summary>
         /// Returns a string representation of the connection.
         /// </summary>
