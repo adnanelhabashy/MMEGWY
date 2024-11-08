@@ -63,7 +63,10 @@ public class App
             // Optionally set tracing
             connection.SetTrace(true);
 
-            // Await the login process
+            // **Initiate Login Immediately After Connection**
+            connection.Login(userName, password);
+
+            // **Await the login process**
             await loginCompletionSource.Task;
 
             if (connection.IsLoggedIn)

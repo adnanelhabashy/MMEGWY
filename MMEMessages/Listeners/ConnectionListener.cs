@@ -23,16 +23,8 @@ namespace MMEMessages.Listeners
 
         public void OnConnectionEstablished(IConnection connection)
         {
-            Console.WriteLine($"Connection established. Session: {connection.Session}, SequenceNumber: {connection.SequenceNumber}");
-            try
-            {
-                connection.Login(_userName, _password);
-                _loginCompletionSource.TrySetResult(true);
-            }
-            catch (Exception ex)
-            {
-                _loginCompletionSource.TrySetException(ex);
-            }
+            Console.WriteLine($"TCP Connection established. Ready to send login.");
+            // Do not initiate login here to avoid circular dependency
         }
 
         public void OnConnectionClosed(IConnection connection)
